@@ -33,3 +33,52 @@ async function init() {
     }
 }
 
+// ===========================================================
+// LOCAL STORAGE (per-browser progress, not shared)
+// ===========================================================
+function loadDiscoveredFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        discoveredIds = raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch (error) {
+        console.error("Could not read saved progress:", error);
+        discoveredIds = new Set();
+    }
+}
+
+function saveDiscoveredToStorage() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...discoveredIds]));
+    } catch (error) {
+        console.error("Could not save progress:", error);
+    }
+}
+
+// ===========================================================
+// ELEMENT TRAY
+// ===========================================================
+function buildElementTray(compounds) {
+    const tray = document.getElementById("elementTray");
+    const seen = new Map(); // symbol -> element name
+
+    compounds.forEach(compound => {
+        compound.composition.forEach(c => {
+            if (!seen.has(c.symbol)) seen.set(c.symbol, c.element);
+        });
+    });
+
+    const symbols = [...seen.keys()].sort();
+
+    tray.innerHTML = "";
+    symbols.forEach(symbol => {
+        const tile = document.createElement("div");
+        tile.className = "element-tile";
+        tile.innerHTML = `
+            <span class="symbol">${symbol}</span>
+            <span class="el-name">${seen.get(symbol)}</span>
+        `;
+        tile.addEventListener("click", () => addToBench(symbol));
+        tray.appendChild(tile);
+    });
+}
+
