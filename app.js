@@ -186,3 +186,45 @@ function setStatus(message, success) {
     el.classList.toggle("success", success);
 }
 
+// ===========================================================
+// DISCOVERY LOG
+// ===========================================================
+function renderDiscoveryLog() {
+    const log = document.getElementById("discoveryLog");
+    log.innerHTML = "";
+
+    allCompounds.forEach(compound => {
+        const unlocked = discoveredIds.has(compound.id);
+        const card = document.createElement("div");
+        card.className = `log-card ${unlocked ? "unlocked" : "locked"}`;
+        card.innerHTML = `
+            <div class="log-formula">${unlocked ? compound.formula : "?????"}</div>
+            <div class="log-name">${unlocked ? compound.name : "Undiscovered"}</div>
+        `;
+        if (unlocked) {
+            card.addEventListener("click", () => showReveal(compound, false));
+        }
+        log.appendChild(card);
+    });
+}
+
+function updateProgressTag() {
+    document.getElementById("progressTag").textContent =
+        `${discoveredIds.size} / ${allCompounds.length} discovered`;
+}
+
+// ===========================================================
+// HINT
+// ===========================================================
+function giveHint() {
+    const undiscovered = allCompounds.filter(c => !discoveredIds.has(c.id));
+    if (undiscovered.length === 0) {
+        setStatus("You've discovered every compound!", true);
+        return;
+    }
+
+    const target = undiscovered[Math.floor(Math.random() * undiscovered.length)];
+    const element = target.composition[Math.floor(Math.random() * target.composition.length)];
+    setStatus(`Hint: one undiscovered compound contains ${element.element} (${element.symbol}).`, false);
+}
+
