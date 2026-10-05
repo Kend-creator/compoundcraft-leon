@@ -130,3 +130,59 @@ function renderBench() {
     });
 }
 
+// ===========================================================
+// MATCHING
+// ===========================================================
+function compositionSignature(compositionArray) {
+    const map = {};
+    compositionArray.forEach(c => { map[c.symbol] = c.atoms; });
+    return JSON.stringify(Object.keys(map).sort().map(k => `${k}:${map[k]}`));
+}
+
+function benchSignature() {
+    return JSON.stringify(Object.keys(bench).sort().map(k => `${k}:${bench[k]}`));
+}
+
+function checkForMatch() {
+    const symbolCount = Object.keys(bench).length;
+    if (symbolCount === 0) {
+        setStatus("", false);
+        return;
+    }
+
+    const signature = benchSignature();
+    const match = allCompounds.find(c => compositionSignature(c.composition) === signature);
+
+    if (match) {
+        discover(match);
+        return;
+    }
+
+    setStatus("No match yet \u2014 keep experimenting...", false);
+}
+
+// ===========================================================
+// DISCOVERY
+// ===========================================================
+function discover(compound) {
+    const isNew = !discoveredIds.has(compound.id);
+    if (isNew) {
+        discoveredIds.add(compound.id);
+        saveDiscoveredToStorage();
+        renderDiscoveryLog();
+        updateProgressTag();
+    }
+
+    setStatus(`Match found \u2014 that's ${compound.name}!`, true);
+    showReveal(compound, isNew);
+
+    bench = {};
+    renderBench();
+}
+
+function setStatus(message, success) {
+    const el = document.getElementById("benchStatus");
+    el.textContent = message;
+    el.classList.toggle("success", success);
+}
+
