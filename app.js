@@ -82,3 +82,51 @@ function buildElementTray(compounds) {
     });
 }
 
+// ===========================================================
+// BENCH LOGIC
+// ===========================================================
+function addToBench(symbol) {
+    bench[symbol] = (bench[symbol] || 0) + 1;
+    renderBench();
+    checkForMatch();
+}
+
+function removeFromBench(symbol) {
+    if (!bench[symbol]) return;
+    bench[symbol] -= 1;
+    if (bench[symbol] <= 0) delete bench[symbol];
+    renderBench();
+    checkForMatch();
+}
+
+function clearBench() {
+    bench = {};
+    renderBench();
+    setStatus("", false);
+}
+
+function renderBench() {
+    const slots = document.getElementById("benchSlots");
+    const symbols = Object.keys(bench);
+
+    if (symbols.length === 0) {
+        slots.innerHTML = '<p class="bench-placeholder">Click elements above to place them here</p>';
+        return;
+    }
+
+    slots.innerHTML = "";
+    symbols.sort().forEach(symbol => {
+        const chip = document.createElement("div");
+        chip.className = "bench-chip";
+        chip.innerHTML = `<span>${symbol} &times; ${bench[symbol]}</span>`;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "\u2212";
+        removeBtn.setAttribute("aria-label", `Remove one ${symbol}`);
+        removeBtn.addEventListener("click", () => removeFromBench(symbol));
+
+        chip.appendChild(removeBtn);
+        slots.appendChild(chip);
+    });
+}
+
