@@ -228,3 +228,53 @@ function giveHint() {
     setStatus(`Hint: one undiscovered compound contains ${element.element} (${element.symbol}).`, false);
 }
 
+// ===========================================================
+// REVEAL MODAL
+// ===========================================================
+function showReveal(compound, isNewDiscovery) {
+    const props = compound.physicalProperties;
+    const content = document.getElementById("revealContent");
+
+    content.innerHTML = `
+        <div class="reveal-card">
+            ${isNewDiscovery ? '<p class="reveal-tag">New discovery</p>' : ""}
+            <div class="reveal-formula">${compound.formula}</div>
+            <h3 id="revealTitle">${compound.name}</h3>
+
+            <div class="reveal-props">
+                <div><span>State</span>${props.state}</div>
+                <div><span>Molar mass</span>${props.molarMass} g/mol</div>
+                <div><span>Melting point</span>${props.meltingPointCelsius ?? "N/A"} &deg;C</div>
+                <div><span>Boiling point</span>${props.boilingPointCelsius ?? "N/A"} &deg;C</div>
+            </div>
+
+            <p class="reveal-description">${compound.description}</p>
+        </div>
+    `;
+
+    const overlay = document.getElementById("revealOverlay");
+    overlay.hidden = false;
+    requestAnimationFrame(() => overlay.classList.add("visible"));
+}
+
+function closeReveal() {
+    const overlay = document.getElementById("revealOverlay");
+    overlay.classList.remove("visible");
+    setTimeout(() => { overlay.hidden = true; }, 200);
+}
+
+document.getElementById("revealOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "revealOverlay") closeReveal();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeReveal();
+});
+
+// ===========================================================
+// CONTROLS
+// ===========================================================
+document.getElementById("clearBtn").addEventListener("click", clearBench);
+document.getElementById("hintBtn").addEventListener("click", giveHint);
+
+init();
