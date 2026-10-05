@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CompoundCraft</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="title-row">
+                <h1>Compound<span class="title-accent">Craft</span></h1>
+                <span class="progress-tag" id="progressTag">0 / 0 discovered</span>
+            </div>
+            <p class="subtitle">Combine elements on the bench. Match a real compound to discover it.</p>
+        </div>
+    </header>
+
+    <main>
+        <!-- ELEMENT TRAY -->
+        <section class="tray-section">
+            <div class="section-label">Elements</div>
+            <div id="elementTray" class="element-tray">
+                <p class="status-text">Loading elements…</p>
+            </div>
+        </section>
+
+        <!-- WORKBENCH -->
+        <section class="bench-section">
+            <div class="bench">
+                <div id="benchSlots" class="bench-slots">
+                    <p class="bench-placeholder">Click elements above to place them here</p>
+                </div>
+                <div class="bench-actions">
+                    <button class="secondary" id="clearBtn">Clear bench</button>
+                    <button class="secondary" id="hintBtn">Hint</button>
+                </div>
+            </div>
+            <p id="benchStatus" class="bench-status"></p>
+        </section>
+
+        <!-- DISCOVERY LOG -->
+        <section class="log-section">
+            <div class="section-heading">
+                <h2>Discovery Log</h2>
+                <span class="section-rule"></span>
+            </div>
+            <div id="discoveryLog" class="discovery-grid">
+                <p class="status-text">Loading compounds…</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Built on the Simple Compound Element API &middot; CompoundCraft v1.0.0</p>
+    </footer>
+
+    <!-- DISCOVERY REVEAL MODAL -->
+    <div id="revealOverlay" class="modal-overlay" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="revealTitle">
+            <button class="modal-close" onclick="closeReveal()" aria-label="Close">&times;</button>
+            <div id="revealContent"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
