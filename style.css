@@ -141,20 +141,25 @@ main {
     margin-bottom: 30px;
 }
 
-.element-tray {
-    display: flex;
-    gap: 10px;
+.periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(32px, 1fr));
+    gap: 3px;
     overflow-x: auto;
     padding: 6px 2px 14px;
 }
 
+.pt-spacer-row {
+    grid-column: 1 / -1;
+    height: 14px;
+}
+
 .element-tile {
-    flex: 0 0 auto;
-    width: 62px;
-    height: 68px;
+    aspect-ratio: 1;
+    min-width: 32px;
     background: var(--paper);
-    border: 2px solid var(--brass);
-    border-radius: 5px;
+    border: 1.5px solid var(--brass);
+    border-radius: 3px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -163,11 +168,13 @@ main {
     font-family: var(--font-mono);
     color: var(--ink);
     transition: background 0.12s ease, transform 0.08s ease;
+    padding: 2px;
 }
 
 .element-tile:hover {
     background: var(--brass-bright);
     transform: translateY(-2px);
+    z-index: 2;
 }
 
 .element-tile:active {
@@ -175,16 +182,34 @@ main {
 }
 
 .element-tile .symbol {
-    font-size: 1.3em;
+    font-size: 0.78em;
     font-weight: 600;
     line-height: 1;
 }
 
 .element-tile .el-name {
-    font-size: 0.6em;
+    font-size: 0.42em;
     color: var(--ink-muted);
-    margin-top: 4px;
+    margin-top: 2px;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Elements not present in any loaded compound — visible, inert */
+.element-tile.inactive {
+    background: var(--paper-dim);
+    border-color: var(--paper-dim);
+    color: var(--ink-muted);
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.element-tile.inactive:hover {
+    background: var(--paper-dim);
+    transform: none;
 }
 
 /* ---------------------------------------------

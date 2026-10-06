@@ -6,7 +6,7 @@ const STORAGE_KEY = "compoundcraft_discovered";
 
 let allCompounds = [];
 let discoveredIds = new Set();
-let bench = {};
+let bench = {}; // { symbol: count }
 
 // ===========================================================
 // LOAD DATA
@@ -20,13 +20,13 @@ async function init() {
         const data = await response.json();
         allCompounds = data.compounds;
 
-        buildElementTray(allCompounds);
+        buildPeriodicTable(allCompounds);
         renderDiscoveryLog();
         updateProgressTag();
     }
     catch (error) {
         console.error(error);
-        document.getElementById("elementTray").innerHTML =
+        document.getElementById("periodicTable").innerHTML =
             '<p class="status-text">Unable to connect to the API.</p>';
         document.getElementById("discoveryLog").innerHTML =
             '<p class="status-text">Unable to connect to the API.</p>';
@@ -55,31 +55,88 @@ function saveDiscoveredToStorage() {
 }
 
 // ===========================================================
-// ELEMENT TRAY
+// PERIODIC TABLE LAYOUT
+// (Compact row strings, not 118 separate position objects.
+//  "." marks an empty cell in that 18-column row.)
 // ===========================================================
-function buildElementTray(compounds) {
-    const tray = document.getElementById("elementTray");
-    const seen = new Map(); // symbol -> element name
+const PERIODIC_ROWS = [
+    "H,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,.,He",
+    "Li,Be,.,.,.,.,.,.,.,.,.,.,B,C,N,O,F,Ne",
+    "Na,Mg,.,.,.,.,.,.,.,.,.,.,Al,Si,P,S,Cl,Ar",
+    "K,Ca,Sc,Ti,V,Cr,Mn,Fe,Co,Ni,Cu,Zn,Ga,Ge,As,Se,Br,Kr",
+    "Rb,Sr,Y,Zr,Nb,Mo,Tc,Ru,Rh,Pd,Ag,Cd,In,Sn,Sb,Te,I,Xe",
+    "Cs,Ba,La,Hf,Ta,W,Re,Os,Ir,Pt,Au,Hg,Tl,Pb,Bi,Po,At,Rn",
+    "Fr,Ra,Ac,Rf,Db,Sg,Bh,Hs,Mt,Ds,Rg,Cn,Nh,Fl,Mc,Lv,Ts,Og"
+].map(row => row.split(","));
+
+const LANTHANIDES = "La,Ce,Pr,Nd,Pm,Sm,Eu,Gd,Tb,Dy,Ho,Er,Tm,Yb,Lu".split(",");
+const ACTINIDES = "Ac,Th,Pa,U,Np,Pu,Am,Cm,Bk,Cf,Es,Fm,Md,No,Lr".split(",");
+
+// ===========================================================
+// PERIODIC TABLE RENDER
+// ===========================================================
+function buildPeriodicTable(compounds) {
+    const container = document.getElementById("periodicTable");
+    const elementNames = new Map(); // symbol -> element name, only for active ones
 
     compounds.forEach(compound => {
         compound.composition.forEach(c => {
-            if (!seen.has(c.symbol)) seen.set(c.symbol, c.element);
+            if (!elementNames.has(c.symbol)) elementNames.set(c.symbol, c.element);
         });
     });
 
-    const symbols = [...seen.keys()].sort();
+    document.getElementById("activeCount").textContent = elementNames.size;
 
-    tray.innerHTML = "";
-    symbols.forEach(symbol => {
-        const tile = document.createElement("div");
-        tile.className = "element-tile";
-        tile.innerHTML = `
-            <span class="symbol">${symbol}</span>
-            <span class="el-name">${seen.get(symbol)}</span>
-        `;
-        tile.addEventListener("click", () => addToBench(symbol));
-        tray.appendChild(tile);
+    container.innerHTML = "";
+
+    // Main 7 periods
+    PERIODIC_ROWS.forEach(row => {
+        row.forEach(symbol => {
+            container.appendChild(buildCell(symbol, elementNames));
+        });
     });
+
+    // Spacer before the f-block rows
+    const spacer = document.createElement("div");
+    spacer.className = "pt-spacer-row";
+    container.appendChild(spacer);
+
+    // Lanthanides / Actinides, offset to start at column 3
+    appendFBlockRow(container, LANTHANIDES, elementNames);
+    appendFBlockRow(container, ACTINIDES, elementNames);
+}
+
+function appendFBlockRow(container, symbols, elementNames) {
+    // Two empty cells so the row visually starts at column 3,
+    // matching where La/Ac sit in the main table above.
+    container.appendChild(buildCell(".", elementNames));
+    container.appendChild(buildCell(".", elementNames));
+    symbols.forEach(symbol => {
+        container.appendChild(buildCell(symbol, elementNames));
+    });
+}
+
+function buildCell(symbol, elementNames) {
+    if (symbol === ".") {
+        const blank = document.createElement("div");
+        return blank; // empty grid cell, no tile
+    }
+
+    const isActive = elementNames.has(symbol);
+    const tile = document.createElement("div");
+    tile.className = `element-tile ${isActive ? "" : "inactive"}`;
+    tile.title = isActive ? elementNames.get(symbol) : `${symbol} (not in current dataset)`;
+
+    tile.innerHTML = `
+        <span class="symbol">${symbol}</span>
+        ${isActive ? `<span class="el-name">${elementNames.get(symbol)}</span>` : ""}
+    `;
+
+    if (isActive) {
+        tile.addEventListener("click", () => addToBench(symbol));
+    }
+
+    return tile;
 }
 
 // ===========================================================
